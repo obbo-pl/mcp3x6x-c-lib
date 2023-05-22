@@ -63,7 +63,7 @@ void app_main(void)
         int32_t adc_data;
         spi_mcp3x6x_ReadADCData(adc, &adc_data, NULL);
         // Temperature sensor transfer function for MCP3564R
-        float t = (0.00040096 * adc_data * vref) - 269.13;
+        float t = 0.00040096 * adc_data * vref - 269.13;
         printf("Temperature: %0.2f [C] \n", t);
     }
 }
