@@ -40,6 +40,7 @@ enum spi_mcp3x6x_variant {
 #define SPI_MCP3X6X_CHANNEL_MAX_MCP3X61         (2)
 #define SPI_MCP3X6X_CHANNEL_MAX_MCP3X62         (4)
 #define SPI_MCP3X6X_CHANNEL_MAX_MCP3X64         (8)
+#define SPI_MCP3X6X_INTERNAL_VREF_MV            (2400)
 
 #define SPI_MCP3X6X_DEVICE_ADDRESS_MASK         (0b11000000)
 #define SPI_MCP3X6X_DEVICE_ADDRESS_BITPOS       (6)
