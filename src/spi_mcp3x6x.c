@@ -135,7 +135,7 @@ int spi_mcp3x6x_GetConfig(spi_mcp3x6x_t* chip)
         chip->config.config3 = buffer[3];
         chip->config.irq = buffer[4];
         chip->config.mux = buffer[5];
-        chip->config.scan = (uint32_t)(0x00000000 | buffer [6] << 16) | (buffer[7] << 8) | buffer[8];
+        chip->config.scan = (uint32_t)(0x00000000 | (uint32_t)buffer[6] << 16) | (uint32_t)(buffer[7] << 8) | buffer[8];
     }
 finish:
     return result;
@@ -412,7 +412,7 @@ int spi_mcp3x6x_SetScanSelection(spi_mcp3x6x_t* chip, uint16_t selection)
 int spi_mcp3x6x_SetTimerDelay(spi_mcp3x6x_t* chip, uint32_t delay)
 {
     if (chip == NULL) return SPI_MCP3X6X_ERR_NOT_INITIALISED;
-    if (delay >= (1 << 24)) delay = (1 << 24) - 1;
+    if (delay >= ((uint32_t)1 << 24)) delay = ((uint32_t)1 << 24) - 1;
     delay = SPI_MCP3X6X_BSWAP_24(delay);
     return spi_mcp3x6x_SendCommand(chip, SPI_MCP3X6X_CMD_ADR_TIMER, (uint8_t*)&delay);
 }
@@ -425,8 +425,8 @@ int spi_mcp3x6x_SetOffsetCalibration(spi_mcp3x6x_t* chip, int32_t offset)
         result = spi_mcp3x6x_GetResolution(chip, &res);
         if (result == chip->result_ok) {
             res--;
-            if (offset >= (1 << res)) offset = (1 << res) - 1;
-            if (offset < -(1 << res)) offset = -(1 << res);
+            if (offset >= ((int32_t)2 ^ res)) offset = ((int32_t)2 ^ res) - 1;
+            if (offset < -((int32_t)2 ^ res)) offset = -((int32_t)2 ^ res);
             if (res <= SPI_MCP3X6X_RESOLUTION_MAX_MCP346X) offset *= 256;
             offset = SPI_MCP3X6X_BSWAP_24(offset);
             result = spi_mcp3x6x_SendCommand(chip, SPI_MCP3X6X_CMD_ADR_OFFSETCAL, (uint8_t*)&offset);
@@ -444,7 +444,7 @@ int spi_mcp3x6x_SetGainCalibration(spi_mcp3x6x_t* chip, uint32_t gain)
         uint8_t res;
         result = spi_mcp3x6x_GetResolution(chip, &res);
         if (result == chip->result_ok) {
-            if (gain >= (1 << res)) gain = (1 << res) - 1;
+            if (gain >= ((uint32_t)1 << res)) gain = ((uint32_t)1 << res) - 1;
             if (res == SPI_MCP3X6X_RESOLUTION_MAX_MCP346X) gain *= 256;
             gain = SPI_MCP3X6X_BSWAP_24(gain);
             result = spi_mcp3x6x_SendCommand(chip, SPI_MCP3X6X_CMD_ADR_GAINCAL, (uint8_t*)&gain);
@@ -494,11 +494,11 @@ int spi_mcp3x6x_ReadADCData(spi_mcp3x6x_t* chip, int32_t* data, uint8_t *ch_id)
                     uint32_t adc_data = 0x00000000;
                     size_t data_size = spi_mcp3x6x_GetADCRawDataSize(chip);
                     for (uint8_t i = 0; i < data_size; i++) {
-                        adc_data |= buffer[i] << (8 * (data_size - i - 1));
+                        adc_data |= (uint32_t)buffer[i] << (8 * (data_size - i - 1));
                     }
                     switch ((chip->config.config3 & SPI_MCP3X6X_CONFIG3_DATA_MASK) >> SPI_MCP3X6X_CONFIG3_DATA_BITPOS) {
                         case SPI_MCP3X6X_CONFIG3_DATA_ADC_CODING:
-                            if (adc_data & (1 << (chip->resolution - 1))) {
+                            if (adc_data & ((uint32_t)1 << (chip->resolution - 1))) {
                                 adc_data |= (0xFFFFFFFF << chip->resolution);
                             } else {
                                 adc_data &= ~(0xFFFFFFFF << chip->resolution);
@@ -506,7 +506,7 @@ int spi_mcp3x6x_ReadADCData(spi_mcp3x6x_t* chip, int32_t* data, uint8_t *ch_id)
                             *data = (int32_t)adc_data;
                             break;
                         case SPI_MCP3X6X_CONFIG3_DATA_LEFT:
-                            *data = ((int32_t)adc_data) / (1 << (32 - chip->resolution));
+                            *data = ((int32_t)adc_data) / ((uint32_t)1 << (32 - chip->resolution));
                             break;
                         case SPI_MCP3X6X_CONFIG3_DATA_RIGHT:
                             *data = (int32_t)adc_data;
