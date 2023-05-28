@@ -55,12 +55,12 @@ void app_main(void)
     // Select the internal temperature sensor.
     spi_mcp3x6x_SetMux(adc, SPI_MCP3X6X_VIN_TEMPERATURE_P, SPI_MCP3X6X_VIN_TEMPERATURE_M);
     //
-    const float vref = 2.4;
     while (1)
     {
+        const float vref = (float)SPI_MCP3X6X_INTERNAL_VREF_MV / 1000;
         spi_mcp3x6x_Conversion(adc);
         vTaskDelay(1000 / portTICK_PERIOD_MS);
-        int32_t adc_data;
+        int32_t adc_data = 0;
         spi_mcp3x6x_ReadADCData(adc, &adc_data, NULL);
         // Temperature sensor transfer function for MCP3564R
         float t = 0.00040096 * adc_data * vref - 269.13;
