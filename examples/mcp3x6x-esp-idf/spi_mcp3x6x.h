@@ -180,7 +180,7 @@ enum spi_mcp3x6x_scan {
 
 
 #ifndef SPI_MCP3X6X_ERR_OFFSET
-#define SPI_MCP3X6X_ERR_OFFSET           0
+#define SPI_MCP3X6X_ERR_OFFSET           1
 #endif // SPI_MCP3X6X_ERR_OFFSET
 enum spi_mcp3x6x_err {
     SPI_MCP3X6X_ERR_TIMEOUT = SPI_MCP3X6X_ERR_OFFSET,
