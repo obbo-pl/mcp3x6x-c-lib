@@ -218,9 +218,32 @@ typedef struct {
 } spi_mcp3x6x_t;
 
 
-
+/**
+ * Memory allocation for the controller data structure. If the driver is no longer needed, it should be freed.
+ * 
+ * @return A pointer to the controller's data structure.
+*/
 spi_mcp3x6x_t* spi_mcp3x6x_Create();
+
+/**
+ * Freeing memory reserved for the controller data structure.
+ * 
+ * @param chip A pointer to the controller's data structure.
+*/
 void spi_mcp3x6x_Destroy(spi_mcp3x6x_t* chip);
+
+/**
+ * Initializes the controller data structure, resets the ADC, and retrieves configuration register values.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param variant A variation of the ADC IC.
+ * @param spi_address ADC chip address hardcoded by manufacturer.
+ * @param spi_read Function for reading system registers. It implements the hardware abstraction layer.
+ * @param spi_write Function for writing to system registers. It implements the hardware abstraction layer.
+ * @param fullduplex A property of the SPI bus.
+ * @param result_ok Result code for correctly performed read (spi_read) or write (spi_write) functions.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_Init(spi_mcp3x6x_t* chip,
                      spi_mcp3x6x_variant_t variant,
                      uint8_t spi_address,
@@ -228,14 +251,81 @@ int spi_mcp3x6x_Init(spi_mcp3x6x_t* chip,
                      int (*spi_write)(uint8_t*, uint8_t*, size_t, uint8_t*, uint8_t*, size_t),
                      bool fullduplex,
                      int result_ok);
+
+/**
+ * ADC Conversion Start/Restart
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_Conversion(spi_mcp3x6x_t* chip);
+
+/**
+ * Places the device in Standby mode.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_Standby(spi_mcp3x6x_t* chip);
+
+/**
+ * Puts the device into Shutdown mode.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_Shutdown(spi_mcp3x6x_t* chip);
+
+/**
+ * Resets the device and puts the entire register map in its default state.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_Reset(spi_mcp3x6x_t* chip);
+
+/**
+ * Puts the device into Full Shutdown mode.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_FullShutdown(spi_mcp3x6x_t* chip);
+
+/**
+ * Selection of the reference voltage. Applies to R version only.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param vref Voltage reference.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetVref(spi_mcp3x6x_t* chip, uint8_t vref);
+
+/**
+ * Clock selection.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param clk Clock source.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetClock(spi_mcp3x6x_t* chip, uint8_t clk);
+
+/**
+ * Current source/sink selection for sensor bias.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param current Current source.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetCurrentSource(spi_mcp3x6x_t* chip, uint8_t current);
+
+/**
+ * ADC operating mode selection.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param mode Operating mode.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetADCMode(spi_mcp3x6x_t* chip, uint8_t mode);
 int spi_mcp3x6x_SetPrescaler(spi_mcp3x6x_t* chip, uint8_t prescaler);
 int spi_mcp3x6x_SetOversampling(spi_mcp3x6x_t* chip, uint8_t osr);
@@ -266,6 +356,13 @@ int spi_mcp3x6x_ReadADCRawData(spi_mcp3x6x_t* chip, uint8_t* status, uint8_t* da
 int spi_mcp3x6x_ReadADCData(spi_mcp3x6x_t* chip, int32_t* data, uint8_t *ch_id);
 size_t spi_mcp3x6x_GetADCRawDataSize(spi_mcp3x6x_t* chip);
 size_t spi_mcp3x6x_GetCRCDataSize(spi_mcp3x6x_t* chip);
+
+/**
+ * Checks if the chip is connected. Reads the ID and compares it to the value for the configured IC.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @return True if the chip ID can be read and is valid for the configured IC.
+*/
 bool spi_mcp3x6x_IsConnected(spi_mcp3x6x_t* chip);
 
 
