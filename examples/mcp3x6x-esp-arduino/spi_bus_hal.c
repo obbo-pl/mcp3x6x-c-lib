@@ -21,6 +21,7 @@
 spi_device_handle_t spi;
 
 #elif defined(_SPI_BUS_HAL_PICO_)
+#include "hardware/spi.h"
 #endif
 
 
@@ -66,6 +67,13 @@ int spi_bus_hal_Init()
         result = spi_bus_add_device(SPI_BUS_HAL, &devcfg, &spi);
     }
 #elif defined(_SPI_BUS_HAL_PICO_)
+    spi_init(spi_default, SPI_BUS_HAL_FREQ_HZ);
+    gpio_set_function(SPI_BUS_HAL_MISO, GPIO_FUNC_SPI);
+    gpio_set_function(SPI_BUS_HAL_CLK, GPIO_FUNC_SPI);
+    gpio_set_function(SPI_BUS_HAL_MOSI, GPIO_FUNC_SPI);
+    gpio_init(SPI_BUS_HAL_CS);
+    gpio_set_dir(SPI_BUS_HAL_CS, GPIO_OUT);
+    gpio_put(SPI_BUS_HAL_CS, 1);
 #endif
 finish:
     return result;
@@ -104,6 +112,11 @@ int spi_bus_hal_SendCmd(uint8_t* cmd_wr, uint8_t* cmd_rd, size_t cmd_size)
 #endif
         result = spi_device_polling_transmit(spi, &t);
 #elif defined(_SPI_BUS_HAL_PICO_)
+        int ret = spi_write_blocking(SPI_BUS_HAL, cmd_wr, cmd_size);
+        if (ret != cmd_size) {
+            result = SPI_BUS_HAL_ERR_GENERIC;
+        }
+        sleep_us(15);
 #endif
     } else {
         result = SPI_BUS_HAL_ERR_INVALID_ARG;
@@ -120,6 +133,9 @@ int spi_bus_hal_ReadReg(uint8_t* cmd_wr, uint8_t* cmd_rd, size_t cmd_size, uint8
 #elif defined(_SPI_BUS_HAL_ESP_)
     int result = gpio_set_level(SPI_BUS_HAL_CS, 0);
 #elif defined(_SPI_BUS_HAL_PICO_)
+    int result = SPI_BUS_HAL_OK;
+    gpio_put(SPI_BUS_HAL_CS, 0);
+    sleep_us(5);
 #endif
     if (result == SPI_BUS_HAL_OK) {
         result = spi_bus_hal_SendCmd(cmd_wr, cmd_rd, cmd_size);
@@ -151,6 +167,10 @@ int spi_bus_hal_ReadReg(uint8_t* cmd_wr, uint8_t* cmd_rd, size_t cmd_size, uint8
 #endif
                 result = spi_device_polling_transmit(spi, &t);
 #elif defined(_SPI_BUS_HAL_PICO_)
+                int ret = spi_read_blocking(SPI_BUS_HAL, 0, data_rd, data_size);
+                if (ret != data_size) {
+                    result = SPI_BUS_HAL_ERR_GENERIC;
+                }
 #endif
             } else {
                 result = SPI_BUS_HAL_ERR_INVALID_ARG;
@@ -164,6 +184,8 @@ finish:
 #elif defined(_SPI_BUS_HAL_ESP_)
     gpio_set_level(SPI_BUS_HAL_CS, 1);
 #elif defined(_SPI_BUS_HAL_PICO_)
+    sleep_us(15);
+    gpio_put(SPI_BUS_HAL_CS, 1);
 #endif
     return result;
 }
@@ -177,6 +199,9 @@ int spi_bus_hal_WriteReg(uint8_t* cmd_wr, uint8_t* cmd_rd, size_t cmd_size, uint
 #elif defined(_SPI_BUS_HAL_ESP_)
     int result = gpio_set_level(SPI_BUS_HAL_CS, 0);
 #elif defined(_SPI_BUS_HAL_PICO_)
+    int result = SPI_BUS_HAL_OK;
+    gpio_put(SPI_BUS_HAL_CS, 0);
+    sleep_us(5);
 #endif
     if (result == SPI_BUS_HAL_OK) {
         result = spi_bus_hal_SendCmd(cmd_wr, cmd_rd, cmd_size);
@@ -212,6 +237,10 @@ int spi_bus_hal_WriteReg(uint8_t* cmd_wr, uint8_t* cmd_rd, size_t cmd_size, uint
 #endif
                 result = spi_device_polling_transmit(spi, &t);
 #elif defined(_SPI_BUS_HAL_PICO_)
+                int ret = spi_write_blocking(SPI_BUS_HAL, data_wr, data_size);
+                if (ret != data_size) {
+                    result = SPI_BUS_HAL_ERR_GENERIC;
+                }
 #endif
             } else {
                 result = SPI_BUS_HAL_ERR_INVALID_ARG;
@@ -225,6 +254,8 @@ finish:
 #elif defined(_SPI_BUS_HAL_ESP_)
     gpio_set_level(SPI_BUS_HAL_CS, 1);
 #elif defined(_SPI_BUS_HAL_PICO_)
+    sleep_us(15);
+    gpio_put(SPI_BUS_HAL_CS, 1);
 #endif
     return result;
 }

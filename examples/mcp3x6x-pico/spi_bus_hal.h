@@ -59,7 +59,6 @@
 #define SPI_BUS_HAL_CLK                 2
 #define SPI_BUS_HAL_CS                  5
 
-
 #else
 // Here you can put definitions specific to your framework
 #endif
@@ -72,9 +71,35 @@
 extern "C" {
 #endif
 
+
 int spi_bus_hal_Init();
+
+/**
+ * Sends a command or sets a register address and reads data from an SPI device.
+ * 
+ * @param cmd_wr A pointer to a buffer containing a command or register address.
+ * @param cmd_rd A pointer to the buffer for the data received in the command phase. For SPI in half-duplex mode, it can be NULL.
+ * @param cmd_size The length of the command or register address.
+ * @param data_wr A pointer to the buffer for the data to be sent. For SPI in half-duplex mode, it can be NULL.
+ * @param data_rd A pointer to a buffer for the received data.
+ * @param data_size Expected length of received data.
+ * @return Function execution status code.
+*/
 int spi_bus_hal_ReadReg(uint8_t* cmd_wr, uint8_t* cmd_rd, size_t cmd_size, uint8_t* data_wr, uint8_t* data_rd, size_t data_size);
+
+/**
+ * Sends a command or sets a register address and sends data to the SPI device.
+ * 
+ * @param cmd_wr A pointer to a buffer containing a command or register address.
+ * @param cmd_rd A pointer to the buffer for the data received in the command phase. For SPI in half-duplex mode, it can be NULL.
+ * @param cmd_size The length of the command or register address.
+ * @param data_wr A pointer to the buffer for the data to be sent.
+ * @param data_rd A pointer to a buffer for the received data. For SPI in half-duplex mode, it can be NULL.
+ * @param data_size The length of the data to be sent.
+ * @return Function execution status code.
+*/
 int spi_bus_hal_WriteReg(uint8_t* cmd_wr, uint8_t* cmd_rd, size_t cmd_size, uint8_t* data_wr, uint8_t* data_rd, size_t data_size);
+
 
 #ifdef __cplusplus
 }
