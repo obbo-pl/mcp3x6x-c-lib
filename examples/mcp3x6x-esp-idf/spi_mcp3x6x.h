@@ -327,30 +327,229 @@ int spi_mcp3x6x_SetCurrentSource(spi_mcp3x6x_t* chip, uint8_t current);
  * @return Function execution status code.
 */
 int spi_mcp3x6x_SetADCMode(spi_mcp3x6x_t* chip, uint8_t mode);
+
+/**
+ * Prescaler value selection for AMCLK.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param prescaler Prescaler value.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetPrescaler(spi_mcp3x6x_t* chip, uint8_t prescaler);
+
+/**
+ * Oversampling ratio for delta-sigma A/D conversion.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param osr Oversampling ratio.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetOversampling(spi_mcp3x6x_t* chip, uint8_t osr);
+
+/**
+ * ADC bias current selection.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param boost Current ratio.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetBoost(spi_mcp3x6x_t* chip, uint8_t boost);
+
+/**
+ * ADC gain selection.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param gain Gain.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetGain(spi_mcp3x6x_t* chip, uint8_t gain);
+
+/**
+ * Auto-zeroing MUX setting. Enabling auto-zeroing doubles the conversion time.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param mux Enable.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_EnableAutoZeroingMUX(spi_mcp3x6x_t* chip, bool mux);
+
+/**
+ * Auto-zeroing internal voltage reference buffer.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param ref Enable.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_EnableAutoZeroingVref(spi_mcp3x6x_t* chip, bool ref);
+
+/**
+ * Conversion mode selection.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param mode Mode.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetConversionMode(spi_mcp3x6x_t* chip, uint8_t mode);
+
+/**
+ * ADC output data format selection.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param format Format.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetDataFormat(spi_mcp3x6x_t* chip, uint8_t format);
+
+/**
+ * CRC checksum format selection on read communications.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param format CRC checksum fromat.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetCRCFormat(spi_mcp3x6x_t* chip, uint8_t format);
+
+/**
+ * Enable CRC checksum on read communications.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param on_read Enable.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_EnableCRCOnRead(spi_mcp3x6x_t* chip, bool on_read);
+
+/**
+ * Enable digital offset or gain calibration.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param offset Enable.
+ * @param gain Enable.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_EnableCalibration(spi_mcp3x6x_t* chip, bool offset, bool gain);
+
+/**
+ * Configuration for the IRQ/MDAT pin.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param mode Mode.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetIRQMode(spi_mcp3x6x_t* chip, uint8_t mode);
+
+/**
+ * Enable Fast Commands.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param fast_cmd Enable.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_EnableFastCommand(spi_mcp3x6x_t* chip, bool fast_cmd);
+
+/**
+ * Enable conversion start interrupt output.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param stp Enable.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_EnableConversionStartInterruptOutput(spi_mcp3x6x_t* chip, bool stp);
+
+/**
+ * Set MUX Vin+ input and Vin- input.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param mux_vin_p Vin+ input.
+ * @param mux_vin_n Vin- input.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetMux(spi_mcp3x6x_t* chip, uint8_t mux_vin_p, uint8_t mux_vin_n);
+
+/**
+ * Delay time between each conversion during a SCAN cycle.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param delay Delay.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetScanDelay(spi_mcp3x6x_t* chip, uint8_t delay);
+
+/**
+ * SCAN channel selection.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param selection ADC channel selection.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetScanSelection(spi_mcp3x6x_t* chip, uint16_t selection);
+
+/**
+ * Time interval between two consecutive SCAN cycles.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param delay Timer delay value.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetTimerDelay(spi_mcp3x6x_t* chip, uint32_t delay);
+
+/**
+ * Offset error digital calibration code.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param offset Offset calibration.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetOffsetCalibration(spi_mcp3x6x_t* chip, int32_t offset);
+
+/**
+ * Gain error digital calibration code.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param gain Gain calibration.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_SetGainCalibration(spi_mcp3x6x_t* chip, uint32_t gain);
+
+/**
+ * Returns the value of the IRQ register.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param irq Pointer to the variable to which the value of the IRQ register will be written.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_ReadIRQ(spi_mcp3x6x_t* chip, uint8_t* irq);
+
+/**
+ * Returns the chip ID value.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param id A pointer to the variable into which the ID value will be written.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_ReadChipID(spi_mcp3x6x_t* chip, uint16_t* id);
+
+/**
+ * Returns the CRC-16 configuration checksum. The checksum is continuously calculated internally when 
+ * the device is locked.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param crc Pointer to the variable to which the value of the configuration CRC register will be entered.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_ReadCRCConfig(spi_mcp3x6x_t* chip, uint16_t* crc);
+
+/**
+ * Returns 3 status bits: DR_STATUS(bit 2), CRCREG_STATUS(bit 1), POR_STATUS(bit 0). 
+ * When the SPI bus is in full-duplex mode, the status check only takes one byte to transmit. 
+ * In the SPI half-duplex mode, the status bits are read from the IRQ register but presented in the same 
+ * positions as for the full-duplex bus.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param status Pointer to the variable to which the value of the status bits will be transferred.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_ReadStatus(spi_mcp3x6x_t* chip, uint8_t* status);
+
 int spi_mcp3x6x_ReadCommand(spi_mcp3x6x_t* chip, uint8_t cmd, uint8_t* data);
 int spi_mcp3x6x_ReadADCRawData(spi_mcp3x6x_t* chip, uint8_t* status, uint8_t* data_rd, size_t length);
 int spi_mcp3x6x_ReadADCData(spi_mcp3x6x_t* chip, int32_t* data, uint8_t *ch_id);
