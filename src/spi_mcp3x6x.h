@@ -545,15 +545,76 @@ int spi_mcp3x6x_ReadCRCConfig(spi_mcp3x6x_t* chip, uint16_t* crc);
  * positions as for the full-duplex bus.
  * 
  * @param chip A pointer to the controller's data structure.
- * @param status Pointer to the variable to which the value of the status bits will be transferred.
+ * @param status Pointer to the variable to which the value of the status bits will be written.
  * @return Function execution status code.
 */
 int spi_mcp3x6x_ReadStatus(spi_mcp3x6x_t* chip, uint8_t* status);
 
+/**
+ * Reads the contents of the configuration register. If enabled, the checksum of the data will be checked. 
+ * Available register addresses and length of returned data can be found in spi_mcp3x6x_def.h.
+ * (SPI_MCP3X6X_CMD_ADR_xxxx and SPI_MCP3X6X_CMD_ADR_xxxx_LENGTH)
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param cmd Configuration register address.
+ * @param data A pointer to the buffer to which the contents of the register will be written.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_ReadCommand(spi_mcp3x6x_t* chip, uint8_t cmd, uint8_t* data);
+
+/**
+ * Write access password entry code. Enter 0xA5 to unlock.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param pass Password.
+ * @return Function execution status code.
+*/
+int spi_mcp3x6x_SetLockPassword(spi_mcp3x6x_t* chip, uint8_t pass);
+
+/**
+ * Reads the content of the ADCDATA register with minimal interference in data transfer transactions. 
+ * The data buffer is exposed directly for reading from the SPI bus. The data CRC is not checked, but 
+ * the CRC data is part of the transaction and may be sent to the buffer. The length of the data to be read 
+ * can be determined as the sum of the lengths of the ADC data and the CRC data. The length of the read data 
+ * may be shorter, you don't have to read all of it if you don't need it. If you are using the full-duplex 
+ * SPI bus, the status data will also be read.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param status Pointer to the variable to which the value of the status bits will be written.
+ * @param data_rd A pointer to the buffer to which the contents of the ADCDATA register and CRC will be written.
+ * @param length The length of the data to read.
+ * @return Function execution status code.
+*/
 int spi_mcp3x6x_ReadADCRawData(spi_mcp3x6x_t* chip, uint8_t* status, uint8_t* data_rd, size_t length);
-int spi_mcp3x6x_ReadADCData(spi_mcp3x6x_t* chip, int32_t* data, uint8_t *ch_id);
+
+/**
+ * It reads the measurement value from the ADCDATA register and returns it as a 32-bit integer, 
+ * regardless of the configured data format. Depending on the configured format, the range of values 
+ * may be different, and the ID of the measured channel may also be transferred.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @param data Pointer to the variable to which the ADC measurement result will be written.
+ * @param ch_id Pointer to the variable to which the channel ID will be written.
+ * @return Function execution status code.
+*/
+int spi_mcp3x6x_ReadADCData(spi_mcp3x6x_t* chip, int32_t* data, uint8_t* ch_id);
+
+/**
+ * Determines the ADC data length based on the current configuration. 
+ * It may be helpful to set the buffer size when reading RAW data.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @return ADC data length.
+*/
 size_t spi_mcp3x6x_GetADCRawDataSize(spi_mcp3x6x_t* chip);
+
+/**
+ * Determines the length of the CRC data based on the current configuration. 
+ * It may be helpful to set the buffer size when reading RAW data.
+ * 
+ * @param chip A pointer to the controller's data structure.
+ * @return CRC data length.
+*/
 size_t spi_mcp3x6x_GetCRCDataSize(spi_mcp3x6x_t* chip);
 
 /**
