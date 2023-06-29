@@ -74,6 +74,7 @@ Both functions should first send the address of the register on which the operat
 
 When initializing the driver, the code of a correctly performed SPI read or write operation is passed as a parameter.
 The library functions use it to know if the communication ended correctly. Often this code is set to zero, but when creating your own HAL functions you may decide to use a different value.
+
 The error codes returned by the library default to values from one upwards. If you want to avoid the codes overlapping with others already defined, you can move them into free space by setting
 SPI_MCP3X6X_ERR_OFFSET in the header file or before calling it.
 
