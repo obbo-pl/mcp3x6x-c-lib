@@ -37,3 +37,49 @@ spi_mcp3x6x_Init(&adc,
                  0);
 
 ```
+
+At this stage, you need to provide two hardware abstraction layer (HAL) functions.
+
+```
+/**
+ * Sends a command or sets a register address and reads data from an SPI device.
+ * 
+ * @param cmd_wr A pointer to a buffer containing a command or register address.
+ * @param cmd_rd A pointer to the buffer for the data received in the command phase. For SPI in half-duplex mode, it can be NULL.
+ * @param cmd_size The length of the command or register address.
+ * @param data_wr A pointer to the buffer for the data to be sent. For SPI in half-duplex mode, it can be NULL.
+ * @param data_rd A pointer to a buffer for the received data.
+ * @param data_size Expected length of received data.
+ * @return Function execution status code.
+*/
+int spi_bus_hal_ReadReg(uint8_t* cmd_wr, uint8_t* cmd_rd, size_t cmd_size, uint8_t* data_wr, uint8_t* data_rd, size_t data_size);
+```
+```
+/**
+ * Sends a command or sets a register address and sends data to the SPI device.
+ * 
+ * @param cmd_wr A pointer to a buffer containing a command or register address.
+ * @param cmd_rd A pointer to the buffer for the data received in the command phase. For SPI in half-duplex mode, it can be NULL.
+ * @param cmd_size The length of the command or register address.
+ * @param data_wr A pointer to the buffer for the data to be sent.
+ * @param data_rd A pointer to a buffer for the received data. For SPI in half-duplex mode, it can be NULL.
+ * @param data_size The length of the data to be sent.
+ * @return Function execution status code.
+*/
+int spi_bus_hal_WriteReg(uint8_t* cmd_wr, uint8_t* cmd_rd, size_t cmd_size, uint8_t* data_wr, uint8_t* data_rd, size_t data_size);
+```
+Both functions should first send the address of the register on which the operation is to be performed, then, depending on the function, send data to or from the register. Throughout the operation, the CS signal should be active.
+
+### Error codes
+
+When initializing the driver, the code of a correctly performed SPI read or write operation is passed as a parameter.
+The library functions use it to know if the communication ended correctly. Often this code is set to zero, but when creating your own HAL functions you may decide to use a different value.
+The error codes returned by the library default to values from one upwards. If you want to avoid the codes overlapping with others already defined, you can move them into free space by setting
+SPI_MCP3X6X_ERR_OFFSET in the header file or before calling it.
+
+### Buffer alignment
+
+32-bit systems may often require a word-length-aligned buffer for DMA operations.
+If you're using an 8-bit controller, alignment won't be necessary, and you can save a few bytes of memory by disabling it. Uncomment the appropriate section of the SPI_MCP3X6X_ALIGNED_SPI_BUFFER macro in the header file.
+
+32-bit alignment is enabled by default in the library.
