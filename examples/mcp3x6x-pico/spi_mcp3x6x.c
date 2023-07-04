@@ -425,8 +425,8 @@ int spi_mcp3x6x_SetOffsetCalibration(spi_mcp3x6x_t* chip, int32_t offset)
         result = spi_mcp3x6x_GetResolution(chip, &res);
         if (result == chip->result_ok) {
             res--;
-            if (offset >= ((int32_t)2 ^ res)) offset = ((int32_t)2 ^ res) - 1;
-            if (offset < -((int32_t)2 ^ res)) offset = -((int32_t)2 ^ res);
+            if (offset >= ((int32_t)1 << res)) offset = ((int32_t)1 << res) - 1;
+            if (offset < -((int32_t)1 << res)) offset = -((int32_t)1 << res);
             if (res <= SPI_MCP3X6X_RESOLUTION_MAX_MCP346X) offset *= 256;
             offset = SPI_MCP3X6X_BSWAP_24(offset);
             result = spi_mcp3x6x_SendCommand(chip, SPI_MCP3X6X_CMD_ADR_OFFSETCAL, (uint8_t*)&offset);
