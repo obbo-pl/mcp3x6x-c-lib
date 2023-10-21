@@ -21,5 +21,5 @@ Expected result - measurement using an internal temperature sensor
 Expected result – in scan mode
 
 <p align="center">
-<img src="https://github.com/obbo-pl/mcp3x6x-c-lib/blob/dbb8d432c1220aa41760fc8b1129093347a27e3b/images/expected_result_scan.png" width=70% height=70%>
+<img src="https://github.com/obbo-pl/mcp3x6x-c-lib/blob/973e63567d77ac7ac540d5fe5895274324f18683/images/expected_result_scan.png" width=70% height=70%>
 </p>
