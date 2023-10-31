@@ -36,7 +36,7 @@ int spi_mcp3x6x_GetResolution(spi_mcp3x6x_t* chip, uint8_t* resolution);
 int spi_mcp3x6x_GetChannelCount(spi_mcp3x6x_t* chip, uint8_t* count);
 int spi_mcp3x6x_CheckCRC(spi_mcp3x6x_t* chip, uint8_t* buffer, size_t data_length);
 uint16_t spi_mcp3x6x_AddCRC(uint16_t crc, uint8_t item);
-int spi_mcp3x6x_CheckInitialization(spi_mcp3x6x_t* chip);
+bool spi_mcp3x6x_IsInitialised(spi_mcp3x6x_t* chip);
 size_t spi_mcp3x6x_GetCommandLength(uint8_t cmd);
 size_t spi_mcp3x6x_GetConfigLength(spi_mcp3x6x_t* chip, uint8_t start, uint8_t end);
 bool spi_mcp3x6x_IsInternalVref(int variant);
@@ -87,6 +87,10 @@ int spi_mcp3x6x_Init(spi_mcp3x6x_t* chip,
                      int result_ok)
 {
     int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    if ((result_ok >= SPI_MCP3X6X_ERR_OFFSET) && (result_ok < SPI_MCP3X6X_ERRCODE_LAST)) {
+        result = SPI_MCP3X6X_ERR_RESULT_CODES_OVERLAP;
+        goto finish;
+    }
     if ((chip != NULL) && (spi_read!= NULL) && (spi_write!= NULL)) {
         chip->variant = variant;
         chip->spi_address = (spi_address << SPI_MCP3X6X_DEVICE_ADDRESS_BITPOS) & SPI_MCP3X6X_DEVICE_ADDRESS_MASK;
@@ -94,8 +98,8 @@ int spi_mcp3x6x_Init(spi_mcp3x6x_t* chip,
         chip->spi_write = spi_write;
         chip->fullduplex = fullduplex;
         chip->result_ok = result_ok;
-        chip->initialised = true;
         chip->mdat = false;
+        chip->initialised = true;
         result = spi_mcp3x6x_GetResolution(chip, &chip->resolution);
         if (result == chip->result_ok) {
             result = spi_mcp3x6x_Reset(chip);
@@ -109,19 +113,20 @@ int spi_mcp3x6x_Init(spi_mcp3x6x_t* chip,
                                          | SPI_MCP3X6X_CMD_TYPE_STATIC_READ;
                     chip->adc_data_length = spi_mcp3x6x_GetADCRawDataSize(chip);
                     chip->adc_crc_length = spi_mcp3x6x_GetCRCDataSize(chip);
-                } else {
-                    chip->initialised = false;
                 }
             }
         }
+        if (result != chip->result_ok) chip->initialised = false;
     }
+finish:
     return result;
 }
 
 int spi_mcp3x6x_GetConfig(spi_mcp3x6x_t* chip)
 {
-    int result = spi_mcp3x6x_CheckInitialization(chip);
-    if (result == chip->result_ok) {
+    int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    if (spi_mcp3x6x_IsInitialised(chip)) {
+        result = chip->result_ok;
         uint8_t buffer[SPI_MCP3X6X_ALIGNED_SPI_BUFFER(9)] = {0};
         uint8_t cmd = chip->spi_address
                       | (SPI_MCP3X6X_CMD_ADR_CONFIG0 << SPI_MCP3X6X_CMD_ADR_BITPOS)
@@ -374,8 +379,8 @@ int spi_mcp3x6x_EnableConversionStartInterruptOutput(spi_mcp3x6x_t* chip, bool s
 
 int spi_mcp3x6x_SetMux(spi_mcp3x6x_t* chip, uint8_t mux_vin_p, uint8_t mux_vin_n)
 {
-    int result = spi_mcp3x6x_CheckInitialization(chip);
-    if (result == chip->result_ok) {
+    int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    if (spi_mcp3x6x_IsInitialised(chip)) {
         uint8_t ch_count;
         result = spi_mcp3x6x_GetChannelCount(chip, &ch_count);
         if (result == chip->result_ok) {
@@ -419,8 +424,8 @@ int spi_mcp3x6x_SetTimerDelay(spi_mcp3x6x_t* chip, uint32_t delay)
 
 int spi_mcp3x6x_SetOffsetCalibration(spi_mcp3x6x_t* chip, int32_t offset)
 {
-    int result = spi_mcp3x6x_CheckInitialization(chip);
-    if (result == chip->result_ok) {
+    int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    if (spi_mcp3x6x_IsInitialised(chip)) {
         uint8_t res;
         result = spi_mcp3x6x_GetResolution(chip, &res);
         if (result == chip->result_ok) {
@@ -431,16 +436,14 @@ int spi_mcp3x6x_SetOffsetCalibration(spi_mcp3x6x_t* chip, int32_t offset)
             offset = SPI_MCP3X6X_BSWAP_24(offset);
             result = spi_mcp3x6x_SendCommand(chip, SPI_MCP3X6X_CMD_ADR_OFFSETCAL, (uint8_t*)&offset);
         }
-    } else {
-        result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
     }
     return result;
 }
 
 int spi_mcp3x6x_SetGainCalibration(spi_mcp3x6x_t* chip, uint32_t gain)
 {
-    int result = spi_mcp3x6x_CheckInitialization(chip);
-    if (result == chip->result_ok) {
+    int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    if (spi_mcp3x6x_IsInitialised(chip)) {
         uint8_t res;
         result = spi_mcp3x6x_GetResolution(chip, &res);
         if (result == chip->result_ok) {
@@ -449,8 +452,6 @@ int spi_mcp3x6x_SetGainCalibration(spi_mcp3x6x_t* chip, uint32_t gain)
             gain = SPI_MCP3X6X_BSWAP_24(gain);
             result = spi_mcp3x6x_SendCommand(chip, SPI_MCP3X6X_CMD_ADR_GAINCAL, (uint8_t*)&gain);
         }
-    } else {
-        result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
     }
     return result;
 }
@@ -462,8 +463,8 @@ int spi_mcp3x6x_SetLockPassword(spi_mcp3x6x_t* chip, uint8_t pass)
 
 int spi_mcp3x6x_ReadADCRawData(spi_mcp3x6x_t* chip, uint8_t* status, uint8_t* data_rd, size_t length)
 {
-    int result = spi_mcp3x6x_CheckInitialization(chip);
-    if (result == chip->result_ok) {
+    int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    if (spi_mcp3x6x_IsInitialised(chip)) {
         if (chip->mdat) {
             result = SPI_MCP3X6X_ERR_INVALID_STATE;
         } else {
@@ -476,8 +477,8 @@ int spi_mcp3x6x_ReadADCRawData(spi_mcp3x6x_t* chip, uint8_t* status, uint8_t* da
 
 int spi_mcp3x6x_ReadADCData(spi_mcp3x6x_t* chip, int32_t* data, uint8_t *ch_id)
 {
-    int result = spi_mcp3x6x_CheckInitialization(chip);
-    if (result == chip->result_ok) {
+    int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    if (spi_mcp3x6x_IsInitialised(chip)) {
         if (chip->mdat) {
             result = SPI_MCP3X6X_ERR_INVALID_STATE;
         } else {
@@ -487,7 +488,7 @@ int spi_mcp3x6x_ReadADCData(spi_mcp3x6x_t* chip, int32_t* data, uint8_t *ch_id)
             result = spi_mcp3x6x_ReadADCRawData(chip, status, buffer, chip->adc_data_length + chip->adc_crc_length);
             if (result == chip->result_ok) {
                 chip->status = status[0];
-                if (spi_mcp3x6x_IsCRCOnReadEnabled(chip->config.config3) & (chip->fullduplex)) {
+                if (spi_mcp3x6x_IsCRCOnReadEnabled(chip->config.config3) && (chip->fullduplex)) {
                     result = spi_mcp3x6x_CheckCRC(chip, buffer, chip->adc_data_length);
                 }
                 if (result == chip->result_ok) {
@@ -532,8 +533,8 @@ int spi_mcp3x6x_ReadADCData(spi_mcp3x6x_t* chip, int32_t* data, uint8_t *ch_id)
 
 int spi_mcp3x6x_ReadIRQ(spi_mcp3x6x_t* chip, uint8_t* irq)
 {
-    int result = spi_mcp3x6x_CheckInitialization(chip);
-    if (result == chip->result_ok) {
+    int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    if (spi_mcp3x6x_IsInitialised(chip)) {
         uint8_t temp = 0;
         result = spi_mcp3x6x_ReadCommand(chip, SPI_MCP3X6X_CMD_ADR_IRQ, &temp);
         if (result == chip->result_ok) {
@@ -545,8 +546,8 @@ int spi_mcp3x6x_ReadIRQ(spi_mcp3x6x_t* chip, uint8_t* irq)
 
 int spi_mcp3x6x_ReadChipID(spi_mcp3x6x_t* chip, uint16_t* id)
 {
-    int result = spi_mcp3x6x_CheckInitialization(chip);
-    if (result == chip->result_ok) {
+    int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    if (spi_mcp3x6x_IsInitialised(chip)) {
         uint16_t temp = 0;
         result = spi_mcp3x6x_ReadCommand(chip, SPI_MCP3X6X_CMD_ADR_RESERVED3, (uint8_t*)&temp);
         if (result == chip->result_ok) {
@@ -558,8 +559,8 @@ int spi_mcp3x6x_ReadChipID(spi_mcp3x6x_t* chip, uint16_t* id)
 
 int spi_mcp3x6x_ReadCRCConfig(spi_mcp3x6x_t* chip, uint16_t* crc)
 {
-    int result = spi_mcp3x6x_CheckInitialization(chip);
-    if (result == chip->result_ok) {
+    int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    if (spi_mcp3x6x_IsInitialised(chip)) {
         uint16_t temp = 0;
         result = spi_mcp3x6x_ReadCommand(chip, SPI_MCP3X6X_CMD_ADR_CRCCFG, (uint8_t*)&temp);
         if (result == chip->result_ok) {
@@ -571,8 +572,8 @@ int spi_mcp3x6x_ReadCRCConfig(spi_mcp3x6x_t* chip, uint16_t* crc)
 
 int spi_mcp3x6x_ReadStatus(spi_mcp3x6x_t* chip, uint8_t* status)
 {
-    int result = spi_mcp3x6x_CheckInitialization(chip);
-    if (result == chip->result_ok) {
+    int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    if (spi_mcp3x6x_IsInitialised(chip)) {
         if (chip->fullduplex) {
             uint8_t temp[SPI_MCP3X6X_ALIGNED_SPI_BUFFER(1)] = {0};
             result = chip->spi_read(&chip->adc_data_cmd, temp, 1, NULL, NULL, 0);
@@ -593,8 +594,8 @@ int spi_mcp3x6x_ReadStatus(spi_mcp3x6x_t* chip, uint8_t* status)
 
 int spi_mcp3x6x_SendCommandFast(spi_mcp3x6x_t* chip, uint8_t cmd)
 {
-    int result = spi_mcp3x6x_CheckInitialization(chip);
-    if (result == chip->result_ok) {
+    int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    if (spi_mcp3x6x_IsInitialised(chip)) {
         cmd = chip->spi_address | (cmd & SPI_MCP3X6X_CMD_FAST_MASK);
         uint8_t status[SPI_MCP3X6X_ALIGNED_SPI_BUFFER(1)] = {0};
         result = chip->spi_write(&cmd, status, 1, NULL, NULL, 0);
@@ -605,8 +606,8 @@ int spi_mcp3x6x_SendCommandFast(spi_mcp3x6x_t* chip, uint8_t cmd)
 
 int spi_mcp3x6x_SendCommand(spi_mcp3x6x_t* chip, uint8_t cmd, uint8_t* data)
 {
-    int result = spi_mcp3x6x_CheckInitialization(chip);
-    if (result == chip->result_ok) {
+    int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    if (spi_mcp3x6x_IsInitialised(chip)) {
         uint8_t reg = chip->spi_address
                       | ((cmd << SPI_MCP3X6X_CMD_ADR_BITPOS) & SPI_MCP3X6X_CMD_ADR_MASK)
                       | SPI_MCP3X6X_CMD_TYPE_INCREMENTAL_WRITE;
@@ -619,8 +620,8 @@ int spi_mcp3x6x_SendCommand(spi_mcp3x6x_t* chip, uint8_t cmd, uint8_t* data)
 
 int spi_mcp3x6x_ReadCommand(spi_mcp3x6x_t* chip, uint8_t cmd, uint8_t* data)
 {
-    int result = spi_mcp3x6x_CheckInitialization(chip);
-    if (result == chip->result_ok) {
+    int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    if (spi_mcp3x6x_IsInitialised(chip)) {
         uint8_t reg = chip->spi_address
                       | ((cmd << SPI_MCP3X6X_CMD_ADR_BITPOS) & SPI_MCP3X6X_CMD_ADR_MASK)
                       | SPI_MCP3X6X_CMD_TYPE_STATIC_READ;
@@ -631,7 +632,7 @@ int spi_mcp3x6x_ReadCommand(spi_mcp3x6x_t* chip, uint8_t cmd, uint8_t* data)
         result = chip->spi_read(&reg, status, 1, NULL, buffer, data_size);
         chip->status = status[0];
         if (result == chip->result_ok) {
-            if (spi_mcp3x6x_IsCRCOnReadEnabled(chip->config.config3) & (chip->fullduplex)) {
+            if (spi_mcp3x6x_IsCRCOnReadEnabled(chip->config.config3) && (chip->fullduplex)) {
                 result = spi_mcp3x6x_CheckCRC(chip, buffer, spi_mcp3x6x_GetCommandLength(cmd));
             }
             if (result == chip->result_ok) {
@@ -646,16 +647,19 @@ int spi_mcp3x6x_ReadCommand(spi_mcp3x6x_t* chip, uint8_t cmd, uint8_t* data)
 
 int spi_mcp3x6x_CheckCRC(spi_mcp3x6x_t* chip, uint8_t* buffer, size_t data_length)
 {
-    int result = spi_mcp3x6x_CheckInitialization(chip);
-    if ((result == chip->result_ok) & (chip->fullduplex)) {
-        uint16_t crc = spi_mcp3x6x_AddCRC(0x0000, chip->status);
-        for(size_t i = 0; i < chip->adc_data_length; i++){
-            crc = spi_mcp3x6x_AddCRC(crc, buffer[i]);
-        }
-        if ((((crc >> 8) & 0xFF) == buffer[chip->adc_data_length]) && (crc & 0xFF) == buffer[chip->adc_data_length + 1]) {
-            result = chip->result_ok;
-        } else {
-            result = SPI_MCP3X6X_ERR_INVALID_CRC;
+    int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    if (spi_mcp3x6x_IsInitialised(chip)) {
+        result = chip->result_ok;
+        if (chip->fullduplex) {
+            uint16_t crc = spi_mcp3x6x_AddCRC(0x0000, chip->status);
+            for(size_t i = 0; i < chip->adc_data_length; i++){
+                crc = spi_mcp3x6x_AddCRC(crc, buffer[i]);
+            }
+            if ((((crc >> 8) & 0xFF) == buffer[chip->adc_data_length]) && (crc & 0xFF) == buffer[chip->adc_data_length + 1]) {
+                result = chip->result_ok;
+            } else {
+                result = SPI_MCP3X6X_ERR_INVALID_CRC;
+            }
         }
     }
     return result;
@@ -676,13 +680,11 @@ uint16_t spi_mcp3x6x_AddCRC(uint16_t crc, uint8_t item)
     return crc & 0xFFFF;
 }
 
-int spi_mcp3x6x_CheckInitialization(spi_mcp3x6x_t* chip)
+bool spi_mcp3x6x_IsInitialised(spi_mcp3x6x_t* chip)
 {
-    int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    bool result = false;
     if (chip != NULL) {
-        if (chip->initialised) {
-            result = chip->result_ok;
-        }
+        result = chip->initialised;
     }
     return result;
 }
@@ -690,7 +692,7 @@ int spi_mcp3x6x_CheckInitialization(spi_mcp3x6x_t* chip)
 size_t spi_mcp3x6x_GetADCRawDataSize(spi_mcp3x6x_t *chip)
 {
     size_t length = 0;
-    if (spi_mcp3x6x_CheckInitialization(chip) == chip->result_ok) {
+    if (spi_mcp3x6x_IsInitialised(chip)) {
         if (((chip->config.config3 & SPI_MCP3X6X_CONFIG3_DATA_MASK) >> SPI_MCP3X6X_CONFIG3_DATA_BITPOS)
                 == SPI_MCP3X6X_CONFIG3_DATA_ADC_CODING) {
             length = chip->resolution / 8;
@@ -704,7 +706,7 @@ size_t spi_mcp3x6x_GetADCRawDataSize(spi_mcp3x6x_t *chip)
 size_t spi_mcp3x6x_GetCRCDataSize(spi_mcp3x6x_t* chip)
 {
     size_t length = 0;
-    if (spi_mcp3x6x_CheckInitialization(chip) == chip->result_ok) {
+    if (spi_mcp3x6x_IsInitialised(chip)) {
         if (chip->config.config3 & SPI_MCP3X6X_CONFIG3_CRC_ONREAD_MASK) {
             if ((chip->config.config3 & SPI_MCP3X6X_CONFIG3_CRC_MASK) == (SPI_MCP3X6X_CONFIG3_CRC_32 << SPI_MCP3X6X_CONFIG3_CRC_BITPOS)) {
                 length += 4;
@@ -737,7 +739,7 @@ size_t spi_mcp3x6x_GetConfigLength(spi_mcp3x6x_t* chip, uint8_t start, uint8_t e
 bool spi_mcp3x6x_IsConnected(spi_mcp3x6x_t* chip)
 {
     bool result = false;
-    if (spi_mcp3x6x_CheckInitialization(chip) == chip->result_ok) {
+    if (spi_mcp3x6x_IsInitialised(chip)) {
         uint16_t id_read;
         int err = spi_mcp3x6x_ReadChipID(chip, &id_read);
         if (err == chip->result_ok) {
