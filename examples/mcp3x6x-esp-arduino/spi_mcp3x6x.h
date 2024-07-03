@@ -504,7 +504,8 @@ int spi_mcp3x6x_SetTimerDelay(spi_mcp3x6x_t* chip, uint32_t delay);
 int spi_mcp3x6x_SetOffsetCalibration(spi_mcp3x6x_t* chip, int32_t offset);
 
 /**
- * Gain error digital calibration code.
+ * Gain error digital calibration code. Default value is 0x800000, which provides a gain of 1.
+ * The gain error calibration value range in equivalent voltage is [0; 2-LSB]
  * 
  * @param chip A pointer to the controller's data structure.
  * @param gain Gain calibration.
