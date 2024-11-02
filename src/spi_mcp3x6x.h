@@ -412,7 +412,7 @@ int spi_mcp3x6x_SetDataFormat(spi_mcp3x6x_t* chip, uint8_t format);
 int spi_mcp3x6x_SetCRCFormat(spi_mcp3x6x_t* chip, uint8_t format);
 
 /**
- * Enable CRC checksum on read communications.
+ * Enable CRC checksum on read communications. CRC-onRead is not supported in half-duplex mode.
  * 
  * @param chip A pointer to the controller's data structure.
  * @param on_read Enable.
@@ -495,7 +495,9 @@ int spi_mcp3x6x_SetScanSelection(spi_mcp3x6x_t* chip, uint16_t selection);
 int spi_mcp3x6x_SetTimerDelay(spi_mcp3x6x_t* chip, uint32_t delay);
 
 /**
- * Offset error digital calibration code.
+ * Offset error digital calibration code. Offset calibration is performed by adding the calibration
+ * value to the ADCDATA code bit by bit. The range of offset calibration value in equivalent
+ * voltage is [-VREF/GAIN; (-VREF - LSB)/GAIN]
  * 
  * @param chip A pointer to the controller's data structure.
  * @param offset Offset calibration.
@@ -542,10 +544,12 @@ int spi_mcp3x6x_ReadChipID(spi_mcp3x6x_t* chip, uint16_t* id);
 int spi_mcp3x6x_ReadCRCConfig(spi_mcp3x6x_t* chip, uint16_t* crc);
 
 /**
- * Returns 3 status bits: DR_STATUS(bit 2), CRCREG_STATUS(bit 1), POR_STATUS(bit 0). 
- * When the SPI bus is in full-duplex mode, the status check only takes one byte to transmit. 
+ * Returns 3 status bits: DR_STATUS(bit 2), CRCREG_STATUS(bit 1), POR_STATUS(bit 0), logic low means
+ * active state. When the SPI bus is in full-duplex mode, the status check only takes one byte to transmit.
  * In the SPI half-duplex mode, the status bits are read from the IRQ register but presented in the same 
  * positions as for the full-duplex bus.
+ * Once the STATUS byte or IRQ register has been full read, DR_STATUS bit is reset to '1'. STATUS byte is
+ * clocked out during each command.
  * 
  * @param chip A pointer to the controller's data structure.
  * @param status Pointer to the variable to which the value of the status bits will be written.
