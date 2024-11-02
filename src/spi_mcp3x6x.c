@@ -650,16 +650,14 @@ int spi_mcp3x6x_CheckCRC(spi_mcp3x6x_t* chip, uint8_t* buffer, size_t data_lengt
     int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
     if (spi_mcp3x6x_IsInitialised(chip)) {
         result = chip->result_ok;
-        if (chip->fullduplex) {
-            uint16_t crc = spi_mcp3x6x_AddCRC(0x0000, chip->status);
-            for(size_t i = 0; i < chip->adc_data_length; i++){
-                crc = spi_mcp3x6x_AddCRC(crc, buffer[i]);
-            }
-            if ((((crc >> 8) & 0xFF) == buffer[chip->adc_data_length]) && (crc & 0xFF) == buffer[chip->adc_data_length + 1]) {
-                result = chip->result_ok;
-            } else {
-                result = SPI_MCP3X6X_ERR_INVALID_CRC;
-            }
+        uint16_t crc = spi_mcp3x6x_AddCRC(0x0000, chip->status);
+        for(size_t i = 0; i < chip->adc_data_length; i++){
+            crc = spi_mcp3x6x_AddCRC(crc, buffer[i]);
+        }
+        if ((((crc >> 8) & 0xFF) == buffer[chip->adc_data_length]) && (crc & 0xFF) == buffer[chip->adc_data_length + 1]) {
+            result = chip->result_ok;
+        } else {
+            result = SPI_MCP3X6X_ERR_INVALID_CRC;
         }
     }
     return result;
