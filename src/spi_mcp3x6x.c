@@ -592,6 +592,19 @@ int spi_mcp3x6x_ReadStatus(spi_mcp3x6x_t* chip, uint8_t* status)
     return result;
 }
 
+int spi_mcp3x6x_ReadStatusIRQ(spi_mcp3x6x_t* chip, uint8_t* status)
+{
+    int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;
+    if (spi_mcp3x6x_IsInitialised(chip)) {
+        uint8_t temp = 0;
+        result = spi_mcp3x6x_ReadCommand(chip, SPI_MCP3X6X_CMD_ADR_IRQ, &temp);
+        if (result == chip->result_ok) {
+            *status = (temp >> 4) & SPI_MCP3X6X_STATUS_MASK;
+        }
+    }
+    return result;
+}
+
 int spi_mcp3x6x_SendCommandFast(spi_mcp3x6x_t* chip, uint8_t cmd)
 {
     int result = SPI_MCP3X6X_ERR_NOT_INITIALISED;

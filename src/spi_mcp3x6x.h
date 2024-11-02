@@ -558,6 +558,17 @@ int spi_mcp3x6x_ReadCRCConfig(spi_mcp3x6x_t* chip, uint16_t* crc);
 int spi_mcp3x6x_ReadStatus(spi_mcp3x6x_t* chip, uint8_t* status);
 
 /**
+ * Returns 3 status bits: DR_STATUS(bit 2), CRCREG_STATUS(bit 1), POR_STATUS(bit 0), logic low indicates
+ * active state. Status bits are always read from the IRQ register but presented in the same
+ * positions as the STATUS byte. Once IRQ register has been full read, DR_STATUS bit is reset to '1'.
+ *
+ * @param chip A pointer to the controller's data structure.
+ * @param status Pointer to the variable to which the value of the status bits will be written.
+ * @return Function execution status code.
+*/
+int spi_mcp3x6x_ReadStatusIRQ(spi_mcp3x6x_t* chip, uint8_t* status);
+
+/**
  * Reads the contents of the configuration register. If enabled, the checksum of the data will be checked. 
  * Available register addresses and length of returned data can be found in spi_mcp3x6x_def.h.
  * (SPI_MCP3X6X_CMD_ADR_xxxx and SPI_MCP3X6X_CMD_ADR_xxxx_LENGTH)
